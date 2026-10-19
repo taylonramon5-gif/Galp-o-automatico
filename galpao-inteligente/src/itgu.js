@@ -1,0 +1,11 @@
+// Faixas: [limite superior (exclusivo), nível, rótulo, ação, nota]. Valores de referência para frangos.
+const TEMP = [[18, 'caution', 'Frio', 'AQUEÇA O GALPÃO.', 'Temperatura baixa para as aves.'], [28, 'safe', 'Boa', 'PODE MANTER COMO ESTÁ.', 'Temperatura na faixa indicada.'], [32, 'caution', 'Quente', 'AUMENTE A VENTILAÇÃO.', 'Acompanhe de perto.'], [1e9, 'danger', 'Muito quente', 'LIGUE A VENTILAÇÃO.', 'Confira se o ar está circulando.']];
+const UMID = [[40, 'danger', 'Muito seca', 'UMEDEÇA O AMBIENTE.', 'Ar seco irrita as aves.'], [50, 'caution', 'Baixa', 'FIQUE DE OLHO.', 'Umidade abaixo da faixa indicada.'], [71, 'safe', 'Boa', 'PODE MANTER COMO ESTÁ.', 'A umidade está na faixa indicada.'], [81, 'caution', 'Alta', 'VENTILE O GALPÃO.', 'Umidade acima da faixa indicada.'], [1e9, 'danger', 'Muito úmida', 'VENTILE E CONFIRA A CAMA.', 'Umidade alta favorece doenças.']];
+const EXT = [[1e9, 'safe', 'Normal', 'ACOMPANHE.', 'Leitura do ambiente de fora.']];
+const ITGU = [[75, 'safe', 'Baixo', 'PODE MANTER COMO ESTÁ.', 'Conforto térmico para as aves.'], [79, 'caution', 'Médio', 'AUMENTE A VENTILAÇÃO.', 'As aves começam a sentir calor.'], [82, 'danger', 'Alto', 'MELHORE A VENTILAÇÃO.', 'Calor forte pode prejudicar as aves.'], [1e9, 'danger', 'Muito alto', 'AGIR AGORA: RESFRIE O GALPÃO.', 'Risco de mortes por calor.']];
+const SEM = { nivel: 'sem', rotulo: 'Sem sinal', acao: 'CONFIRA O SENSOR.', nota: 'Não chegou uma leitura.' };
+const avalia = (x, t) => { if (x == null) return { valor: null, ...SEM }; const [, nivel, rotulo, acao, nota] = t.find(f => x < f[0]); return { valor: x, nivel, rotulo, acao, nota }; };
+// Ponto de orvalho (Magnus) e ITGU = Tg + 0,36·Tpo + 41,5. Sem sensor de globo, usa a temperatura do ar (aproximação).
+const orvalho = (t, u) => { const g = Math.log(Math.max(u, 1) / 100) + 17.27 * t / (237.7 + t); return 237.7 * g / (17.27 - g); };
+const itgu = l => l.temperatura == null || l.umidade == null ? null : +((l.temperatura_globo ?? l.temperatura) + 0.36 * orvalho(l.temperatura, l.umidade) + 41.5).toFixed(1);
+exports.avaliar = l => ({ ts: l.ts || 0, temperatura: avalia(l.temperatura, TEMP), umidade: avalia(l.umidade, UMID), externa: avalia(l.temperatura_externa, EXT), calor: avalia(itgu(l), ITGU) });

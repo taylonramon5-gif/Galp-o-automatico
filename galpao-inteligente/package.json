@@ -1,0 +1,1 @@
+{"name":"galpao-inteligente","version":"1.0.0","description":"Painel de monitoramento do galpão de aves","main":"src/server.js","scripts":{"start":"node src/server.js","simular":"node src/simulador.js"},"engines":{"node":">=18"},"license":"MIT"}
